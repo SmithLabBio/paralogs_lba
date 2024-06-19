@@ -6,7 +6,7 @@ setwd('~/Documents/GitHub/paralogs_lba/')
 # read files
 results_ml <- read.csv('./results/figure1b/results_ml.csv')
 
-results_mp <- read.csv('results/figure1/results_mp.csv')
+results_mp <- read.csv('results/figure1b/results_mp.csv')
 
 # add new columns indicating method
 results_ml <- results_ml %>% 

@@ -49,7 +49,7 @@ data_average <- results_plot %>%
 # make a box plot
 figure3 <- ggplot(data_average, aes(x=outgroup, y=qratio, fill=avg_q1)) +
   geom_tile() + 
-  labs(x="r", y="q", fill="Q1") +
+  labs(x="Outgroup Height", y="q", fill="Q1") +
   theme_bw() + scale_fill_viridis_c(limits=c(0,1.0)) + 
   facet_wrap(~ method_category, scales="free") +
   theme(
