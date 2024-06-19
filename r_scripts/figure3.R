@@ -5,9 +5,9 @@ library(viridis)
 setwd('~/Documents/GitHub/paralogs_lba/')
 
 # read files
-results_ml <- read.csv('./old_results/vary_qratio_r/results_ml.tsv', sep="\t")
+results_ml <- read.csv('./old_results/vary_qratio_outgroup/results_ml.tsv', sep="\t")
 
-results_mp <- read.csv('./old_results/vary_qratio_r/results_mp.tsv', sep="\t")
+results_mp <- read.csv('./old_results/vary_qratio_outgroup/results_mp.tsv', sep="\t")
 
 # add new columns indicating method
 results_ml <- results_ml %>% 
@@ -38,16 +38,16 @@ results_plot <- bind_rows(all_data, sco_true, lsd_true) %>%
 
 # calculate averages
 data_average <- results_plot %>%
-  mutate(normalized.QS = as.numeric(normalized.QS)) %>%
-  group_by(r, qratio, method, category) %>%
-  summarize(avg_norm_qs = mean(normalized.QS, na.rm = TRUE)) %>%
+  mutate(q1 = as.numeric(q1)) %>%
+  group_by(outgroup, qratio, method, category) %>%
+  summarize(avg_q1 = mean(q1, na.rm = TRUE)) %>%
   mutate(method_category = paste(method, category, sep = " - ")) %>%
   mutate(method_category = factor(method_category, levels = c("MP - SC", "MP - All", "MP - LSD", "ML - SC", "ML - All", "ML - LSD")))
 
 
 
 # make a box plot
-figure2 <- ggplot(data_average, aes(x=r, y=qratio, fill=avg_norm_qs)) +
+figure3 <- ggplot(data_average, aes(x=outgroup, y=qratio, fill=avg_q1)) +
   geom_tile() + 
   labs(x="r", y="q", fill="Q1") +
   theme_bw() + scale_fill_viridis_c(limits=c(0,1.0)) + 
@@ -59,11 +59,11 @@ figure2 <- ggplot(data_average, aes(x=r, y=qratio, fill=avg_norm_qs)) +
     axis.title.y = element_text(size=12)
   )
 
-pdf('./figures/Figure2.pdf', height=6, width=10)
-figure2
+pdf('./figures/Figure3.pdf', height=6, width=10)
+figure3
 dev.off()
 
-png('./figures/Figure2.png',height=6, width=10, units = "in", res=400)
-figure2
+png('./figures/Figure3.png',height=6, width=10, units = "in", res=400)
+figure3
 dev.off()
 
