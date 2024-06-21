@@ -1,1 +1,0 @@
-/Users/megansmith/Desktop/programs/SimPhy_1.0.2/bin/simphy_mac64 -RS 1 -RL f:1000 -S ((A:250000.0,B:250000.0*50.0):50000.0,(C:250000.0,D:250000.0*50.0):50000.0); -SP f:10000 -SU f:1e-07 -SG f:1 -LB f:5e-07 -LD f:0.0 -LL 4 -O figure1/rep0 

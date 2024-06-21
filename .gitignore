@@ -1,3 +1,10 @@
 /__pycache__
 .DS_Store
 .Rhistory
+*.mldist
+*.bionj
+*.treefile
+*.log
+*.iqtree
+*.gz
+*.phy

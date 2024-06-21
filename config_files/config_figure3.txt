@@ -1,6 +1,6 @@
 [Programs]
 mpboot = ~/Documents/Programs/mpboot-sse-1.1.0-MacOSX/bin/mpboot 
-astral = ~/Documents/Programs/ASTRAL-5.6.3/Astral/astral.5.6.3.jar
+astral = ~/Documents/programs/ASTER-MacOS/bin/astral
 simphy = ~/Desktop/programs/SimPhy_1.0.2/bin/simphy_mac64
 seqgen = ~/Documents/Programs/Seq-Gen-1.3.4/source/seq-gen
 iqtree = ~/Documents/Programs/iqtree-2.2.0-beta-MacOSX/bin/iqtree2 
