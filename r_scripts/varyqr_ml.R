@@ -44,11 +44,11 @@ figure2 <- ggplot(data_average, aes(x=r, y=qratio, fill=avg_norm_qs)) +
     axis.title.y = element_text(size=12)
   )
 
-pdf('./figures/varyqr_ml.pdf', height=6, width=5)
+pdf('./figures/varyqr_ml.pdf', height=3, width=10)
 figure2
 dev.off()
 
-png('./figures/varyqr_ml.png',height=6, width=5, units = "in", res=400)
+png('./figures/varyqr_ml.png',height=3, width=10, units = "in", res=400)
 figure2
 dev.off()
-
+ 

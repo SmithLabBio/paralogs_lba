@@ -5,7 +5,7 @@ library(viridis)
 setwd('~/Documents/GitHub/paralogs_lba/')
 
 # read files
-results <- read.csv('./results/varyqr/results_mp.csv', sep=",")
+results <- read.csv('./results/varyqr_mp/results_mp.csv', sep=",")
 
 # create data subsets
 all_data <- results %>% 
