@@ -9,6 +9,7 @@ import numpy as np
 import itertools
 import subprocess
 import sys
+import dendropy
 
 import configparser # process_params
 
@@ -426,7 +427,7 @@ class TreeInferrer:
             if not os.path.exists(f"rep{i}_{self.config_dict["IQTree model"]}.treefile"):
 
                 # create command
-                command = '%s -s %s_%s.phy -m %s -pre rep%s_%s --redo' % (
+                command = '%s -s %s_%s.phy -m %s -pre rep%s_%s --redo --quiet' % (
                     self.config_dict["iqtree"],
                     self.config_dict["output prefix"],
                     str(i),
@@ -529,14 +530,17 @@ class ConcordanceCalculator:
 
                 with open("temp.map", "w") as f:
                     for key in spdict:
-                        line = key
-                        line = line + ":"
                         for item in spdict[key]:
-                            line = line + item
-                            line = line + ','
-                        line = line.strip(',')
-                        f.write(line)
-                        f.write('\n')
+                            f.write(f"{item} {key}\n")
+                    #for key in spdict:
+                    #    line = key
+                    #    line = line + ":"
+                    #    for item in spdict[key]:
+                    #        line = line + item
+                    #        line = line + ','
+                    #    line = line.strip(',')
+                    #    f.write(line)
+                    #    f.write('\n')
 
                 if len(spdict) < 4:
                     result = None
@@ -545,22 +549,22 @@ class ConcordanceCalculator:
 
                 else:
                     # create command
-                    command = "java -jar %s -q %s -i temp.tre -a temp.map -t 8 2> temp.scored.log" % (
-                        self.config_dict["astral"],
-                        self.config_dict["score tree"],
-                    )
+                    command = f"{self.config_dict['astral']} -C -c {self.config_dict['score tree']} -i temp.tre -a temp.map -u 2 > temp.scored.log"
 
                     # run command
                     os.system(command)
 
-                    # get result
-                    with open("temp.scored.log", 'r') as f:
-                        for line in f.readlines():
-                            if '[q1=' in line:
-                                result = line.split("[")[1].split("]")[0].strip()
-                    q1 = result.split("=")[1].split(';')[0]
-                    q2 = result.split(";")[1].split('=')[1].split(";")[0]
-                    q3 = result.split(";")[2].split("=")[1].strip("]")
+                    scored_tree = dendropy.Tree.get(path="temp.scored.log", schema="newick")
+                    filter_fn = lambda n: hasattr(n, 'label') and n.label is not None 
+                    nodes = scored_tree.find_node(filter_fn=filter_fn)
+                    children = [x.taxon.label for x in nodes.child_nodes()]
+                    if ('C' in children and 'D' in children) or ('A' in children and 'B' in children):
+                        q1 = nodes.label.split("q1=")[1].split(";")[0]
+                        q2 = nodes.label.split("q2=")[1].split(";")[0]
+                        q3 = nodes.label.split("q3=")[1].split("]")[0]
+                    else:
+                        raise Exception("Issue when scoring tree.")
+                    
                     os.system('rm temp.tre temp.map temp.scored.log')
 
                     if num_leaves == 4 and len(spdict) == 4:
@@ -573,6 +577,7 @@ class ConcordanceCalculator:
             q1_list.append(q1)
             q2_list.append(q2)
             q3_list.append(q3)
+            del q1, q2, q3
 
         # change directory
         os.chdir(startdir)
@@ -592,37 +597,43 @@ class ConcordanceCalculator:
         results_lsdonly = []
 
         for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
-            t = ete3.Tree(all_trees[i])
-            R = t.get_midpoint_outgroup()
-            t.set_outgroup(R)
 
-            indicator = False
-            indicator_only = True
+            if "None" in all_trees[i]:
+                indicator = "NA"
+                indicator_only = "NA"
 
-            lsd_count = 0
-
-            # iterate over nodes, if there is any node where there are multiple monophyletic B or D copies, then the result is true
-            for node in t.traverse("postorder"):
-                samples = node.get_leaf_names()
+            else:
+                t = ete3.Tree(all_trees[i])
+                R = t.get_midpoint_outgroup()
+                t.set_outgroup(R)
+    
+                indicator = False
+                indicator_only = True
+    
+                lsd_count = 0
+    
+                # iterate over nodes, if there is any node where there are multiple monophyletic B or D copies, then the result is true
+                for node in t.traverse("postorder"):
+                    samples = node.get_leaf_names()
+                    samples = [x.split("_")[0]for x in samples]
+                    species = set(samples)
+                    if len(species) == 1 and len(samples) > 1 and samples[0] == "B":
+                        indicator = True
+                        lsd_count+=1
+                    elif len(species) == 1 and len(samples) > 1 and samples[0] == "D":
+                        indicator = True
+                        lsd_count+=1
+                    elif len(species) == 1 and len(samples) > 1 and samples[0] == "A":
+                        lsd_count+=1
+                    elif len(species) == 1 and len(samples) > 1 and samples[0] == "C":
+                        lsd_count+=1
+                    
+                samples = t.get_leaf_names()
                 samples = [x.split("_")[0]for x in samples]
                 species = set(samples)
-                if len(species) == 1 and len(samples) > 1 and samples[0] == "B":
-                    indicator = True
-                    lsd_count+=1
-                elif len(species) == 1 and len(samples) > 1 and samples[0] == "D":
-                    indicator = True
-                    lsd_count+=1
-                elif len(species) == 1 and len(samples) > 1 and samples[0] == "A":
-                    lsd_count+=1
-                elif len(species) == 1 and len(samples) > 1 and samples[0] == "C":
-                    lsd_count+=1
-                
-            samples = t.get_leaf_names()
-            samples = [x.split("_")[0]for x in samples]
-            species = set(samples)
-            if len(species) + lsd_count < len(samples):
-                indicator_only = False
-
+                if len(species) + lsd_count < len(samples):
+                    indicator_only = False
+    
 
             results.append(indicator)
             results_lsdonly.append(indicator_only)

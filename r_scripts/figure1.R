@@ -4,7 +4,7 @@ library(ggplot2)
 setwd('~/Documents/GitHub/paralogs_lba/')
 
 # read files
-results_ml <- read.csv('./results/figure1b/results_ml.csv')
+results_ml <- read.csv('./results/figure1/results_ml.csv')
 
 results_mp <- read.csv('results/figure1b/results_mp.csv')
 
@@ -27,7 +27,7 @@ sco_true <- results %>%
   mutate(category = "SC")
 
 lsd_true <- results %>%
-  filter(lsd == " True" & lsdonly == " True") %>%
+  filter(lsd == "True" & lsdonly == "True") %>%
   mutate(category = "LSD")
 
 # combine data
@@ -37,7 +37,7 @@ results_plot <- bind_rows(all_data, sco_true, lsd_true) %>%
 
 # make a box plot
 figure1 <- ggplot(results_plot, aes(x=category, y=q1)) + 
-  geom_violin() + 
+  geom_boxplot() + 
   facet_wrap(~ method, scales="free") + 
   labs(x = NULL, y = "Q1") +
   theme_bw() +
