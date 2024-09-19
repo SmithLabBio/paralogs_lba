@@ -10,6 +10,7 @@ import itertools
 import subprocess
 import sys
 import dendropy
+import warnings
 
 import configparser # process_params
 
@@ -64,6 +65,8 @@ class ConfigParser:
             if 'Grid' in config["General"]["replicates"]:
                 parameters = int(config["General"]["replicates"].split("Grid(")[1].split(",")[0])
                 choices = int(config["General"]["replicates"].split("Grid(")[1].split(",")[1].strip().strip(")"))
+                if parameters > 2:
+                    warnings.warn("We have not tested this script for performing grid searches with more than two parameters.", UserWarning)
                 config_dict["replicates"] = choices ** parameters
                 config_dict["choices"] = choices
                 config_dict["scheme"] = 'Grid'
@@ -114,15 +117,6 @@ class ConfigParser:
         except Exception as e:
             raise Exception(f"Error in seqgen config: {e}")
 
-        # Parse ASTRAL info
-        try:
-            config_dict["score tree"] = config["ASTRAL"]["score tree"]
-
-        except KeyError as e:
-            raise KeyError(f"Error in ASTRAL config: Missing key for ASTRAL information in configuration file: {e}")
-        except Exception as e:
-            raise Exception(f"Error in ASTRAL config: {e}")
-
         # Parse IQTree info
         try:
             config_dict["IQTree model"] = config["IQTree"]["IQTree model"]
@@ -131,7 +125,6 @@ class ConfigParser:
             raise KeyError(f"Error in IQTree config: Missing key for IQTree information in configuration file: {e}")
         except Exception as e:
             raise Exception(f"Error in IQTree config: {e}")
-
 
         # Get sampling grids
         if config_dict["scheme"] == "Grid":
@@ -147,9 +140,17 @@ class ConfigParser:
             raise Exception("Please do not use p and r in a grid and set p and r to match.")
         if config_dict['match mu and lambda'] and grid_names == ["duplication rate", "loss rate"]:
             raise Exception("Please do not use mu and lambda in a grid and set mu and lambda to match.")
+        if config_dict['match mu and lambda'] and "loss rate" in grid_names:
+            raise Exception("Please do not use mu in a grid and set mu and lambda to match.")
+        if config_dict['match p and r'] and "p" in grid_names:
+            raise Exception("Please do not use p in a grid and set p and r to match.")
 
         # create output directory
-        os.system('mkdir -p %s/%s' % (config_dict["output directory"], config_dict["output prefix"]))
+        os.system('mkdir -p %s' % config_dict["output directory"])
+        try:
+            os.mkdir('%s/%s' % (config_dict["output directory"], config_dict["output prefix"]))
+        except:
+            raise Exception("Output folder already exists.")
 
         # get species tree
         if not config_dict["species tree file"] == "None":
@@ -158,7 +159,9 @@ class ConfigParser:
             config_dict["tree"] = self._create_species_tree(config_dict)
             if not config_dict["outgroup"] == None:
                 config_dict["tree"] = self._add_outgroup(config_dict)
-
+        with open(os.path.join(config_dict['output directory'], config_dict['output prefix'],'temp_score.tre'), 'w') as f:
+            f.write(config_dict["tree"][0].strip("'"))
+        config_dict["score tree"] = os.path.join('temp_score.tre')
 
         return(config_dict)
 
@@ -273,7 +276,7 @@ class DataSimulator:
         concat_species_command = 'cat '
         for i in range(self.config_dict['replicates']):
             concat_species_command += ' '+os.path.join(self.config_dict["output prefix"],'rep'+str(i),'1', 's_tree.trees')
-        concat_species_command += ' > '+ os.path.join(self.config_dict["output prefix"],'s_tree.trees') 
+        concat_species_command += ' > '+ os.path.join(self.config_dict["output prefix"],'s_tree.trees')
         os.system(concat_species_command)
 
         concat_gene_command = 'cat '
@@ -532,15 +535,6 @@ class ConcordanceCalculator:
                     for key in spdict:
                         for item in spdict[key]:
                             f.write(f"{item} {key}\n")
-                    #for key in spdict:
-                    #    line = key
-                    #    line = line + ":"
-                    #    for item in spdict[key]:
-                    #        line = line + item
-                    #        line = line + ','
-                    #    line = line.strip(',')
-                    #    f.write(line)
-                    #    f.write('\n')
 
                 if len(spdict) < 4:
                     result = None
@@ -549,7 +543,7 @@ class ConcordanceCalculator:
 
                 else:
                     # create command
-                    command = f"{self.config_dict['astral']} -C -c {self.config_dict['score tree']} -i temp.tre -a temp.map -u 2 > temp.scored.log"
+                    command = f"{self.config_dict['astral']} -C -c {self.config_dict['score tree']} -i temp.tre -a temp.map -u 2 -r 1 -s 0 > temp.scored.log"
 
                     # run command
                     os.system(command)
@@ -580,6 +574,7 @@ class ConcordanceCalculator:
             del q1, q2, q3
 
         # change directory
+        os.system(f"rm {self.config_dict['score tree']}")
         os.chdir(startdir)
 
         return(q1_list, q2_list, q3_list, sco)
