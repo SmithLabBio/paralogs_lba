@@ -8,6 +8,4 @@
 *.iqtree
 *.gz
 *.phy
-/old_config_files
-/old_figures
-/old_r_scripts
+/old/
