@@ -1,7 +1,9 @@
-"""This script will simulate data under a user-defined species tree using simphy.
-Usage: python3 simulator_v1a.py paramfile.txt
-NOTE: THERE CANNOT BE UNDERSCORES IN YOUR TAXON NAMES
-NOTE: AT PRESENT WILL ONLY WORK WITH UP TO 9999 replicates. """
+"""This script will simulate data under a user-defined species tree using simphy and seqgen.
+It will estimate trees using ML and MP.
+It will calculate quartet concordance in ASTRAL.
+It will look for LSDs and their timings.
+Intended for use in combination with usage.py.
+NOTE: THERE CANNOT BE UNDERSCORES IN YOUR TAXON NAMES"""
 
 import os
 import ete3
