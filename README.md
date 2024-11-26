@@ -1,6 +1,6 @@
 # Paralogs and long-branch attraction
 
-Scripts for paper "Using large gene families for phylogenetic inference mitigates the effects of long-branch attraction"
+Scripts for paper "Using paralogs for phylogenetic inference mitigates the effects of long-branch attraction"
 
 ## Simulation Studies
 
