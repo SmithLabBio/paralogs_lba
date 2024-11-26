@@ -424,7 +424,7 @@ class TreeInferrer:
             for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
                 input_filename = 'rep%s.treefile' % (str(i))
                 with open(input_filename, 'r') as infile:
-                    outfile.write(infile.read())  # Add a newline between concatenated files
+                    outfile.write(infile.read())
 
 
 
@@ -477,7 +477,7 @@ class TreeInferrer:
             for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
                 input_filename = 'rep%s_%s.treefile' % (str(i), self.config_dict["IQTree model"])
                 with open(input_filename, 'r') as infile:
-                    outfile.write(infile.read())  # Add a newline between concatenated files
+                    outfile.write(infile.read())
 
 
 
