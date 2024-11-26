@@ -11,3 +11,6 @@
 /old/
 /test_results/
 /config_files/simple_test.config
+usage_testing.py
+simple_test.sh
+simulate_data_testing.py
