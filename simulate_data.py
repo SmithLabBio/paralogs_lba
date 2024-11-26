@@ -146,6 +146,8 @@ class ConfigParser:
             raise Exception("Please do not use mu in a grid and set mu and lambda to match.")
         if config_dict['match p and r'] and "p" in grid_names:
             raise Exception("Please do not use p in a grid and set p and r to match.")
+        if config_dict['cap mu'] and grid_names != ["duplication rate", "loss rate"]:
+            raise Exception("Please do not use the cap mu option unless you are using a grid of lambda and mu.")
 
         # create output directory
         os.system('mkdir -p %s' % config_dict["output directory"])
