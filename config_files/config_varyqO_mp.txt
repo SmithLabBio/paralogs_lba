@@ -1,0 +1,35 @@
+[Programs]
+mpboot = /mnt/home/ms4438/programs/mpboot-sse-1.1.0-Linux/bin/mpboot
+astral = /mnt/home/ms4438/programs/ASTER-Linux/bin/astral
+simphy = /mnt/home/ms4438/programs/SimPhy_1.0.2/bin/simphy_lnx64
+seqgen = /mnt/home/ms4438/programs/Seq-Gen-1.3.4/source/seq-gen
+iqtree = /mnt/home/ms4438/programs/iqtree-2.3.2-Linux-intel/bin/iqtree2
+
+[General]
+replicates = Grid(2,20) # when using Grid first number is number of parameters in the grid. second number is number of replicates per parameter. do not use grid for a parameter without using grid here. (2,20)
+subreps = 100 # replicates per set of parameters (100)
+output directory = /mnt/scratch/smithfs/megan/lba
+output prefix = varyqO_mp
+
+[Species Tree]
+tree = None
+p = 250000 # length of shorter external branches
+qratio = Grid(10,30) # ratio of long to short external branches
+r = 750000 # length of internal branch
+match p and r = False # indicator for whether the short external and internal branch lengths should match
+
+[SimPhy]
+substitution rate = 1e-7
+pop ne = 10000
+duplication rate = 5e-7
+loss rate = 5e-7 
+outgroup = Grid(1.01,5)
+cap mu = False # prevents mu from exceeding lambda
+match mu and lambda = False # lambda and mu set equal
+
+[SeqGen]
+model = HKY
+length = 2000
+
+[IQTree]
+IQTree Model = HKY
