@@ -155,12 +155,14 @@ class ConfigParser:
         # get species tree
         if not config_dict["species tree file"] == "None":
             config_dict["tree"] = list(itertools.repeat(open(config_dict["species tree file"], 'r').readlines()[0],config_dict["replicates"]))
+            with open(os.path.join(config_dict['output directory'], config_dict['output prefix'],'temp_score.tre'), 'w') as f:
+                f.write(config_dict["tree"][0].strip("'"))
         else:
             config_dict["tree"] = self._create_species_tree(config_dict)
+            with open(os.path.join(config_dict['output directory'], config_dict['output prefix'],'temp_score.tre'), 'w') as f:
+                f.write(config_dict["tree"][0].strip("'"))
             if not config_dict["outgroup"] == None:
                 config_dict["tree"] = self._add_outgroup(config_dict)
-        with open(os.path.join(config_dict['output directory'], config_dict['output prefix'],'temp_score.tre'), 'w') as f:
-            f.write(config_dict["tree"][0].strip("'"))
         config_dict["score tree"] = os.path.join('temp_score.tre')
 
         return(config_dict)
@@ -386,34 +388,43 @@ class TreeInferrer:
 
         for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
             
+            # check that there are at least four taxa in the alignment
+            with open(f"{self.config_dict['output prefix']}_{i}.phy", 'r') as file:
+                line_count = sum(1 for line in file)
+
             # create command
-            command = '%s -s %s_%s.phy -pre rep%s' % (
-                self.config_dict["mpboot"],
-                self.config_dict["output prefix"],
-                str(i),
-                str(i)
-            )
-            
-            # run command
-            os.system(command)
+            if line_count >= 5:
+                command = '%s -s %s_%s.phy -pre rep%s' % (
+                    self.config_dict["mpboot"],
+                    self.config_dict["output prefix"],
+                    str(i),
+                    str(i)
+                )
+
+                # run command
+                os.system(command)
 
             # check that the file was generated
             if not os.path.isfile('rep%s.treefile' % str(i)):
                 with open('rep%s.treefile' % str(i), 'w') as f:
                     f.write('None\n')
         
-        # clean up
-        os.system('rm rep*.mpboot')
-        os.system('rm rep*.log')
-        os.system('rm rep*.parstree')
+        ## clean up
+        os.system('find . -maxdepth 1 -name "*.mpboot" -delete')
+        os.system('find . -maxdepth 1 -name "*.log" -delete')
+        os.system('find . -maxdepth 1 -name "*.parstree" -delete')
 
         # concatenate
-        concat_command = 'cat'
-        for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
-            concat_command += ' rep%s.treefile' % str(i)
-        concat_command += ' > all_inferred_mp.tre'
-        os.system(concat_command)
-        os.system('rm rep*.treefile')
+        output_filename = 'all_inferred_mp.tre'
+        with open(output_filename, 'w') as outfile:
+            for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
+                input_filename = 'rep%s.treefile' % (str(i))
+                with open(input_filename, 'r') as infile:
+                    outfile.write(infile.read())  # Add a newline between concatenated files
+
+
+
+        os.system('find . -maxdepth 1 -name "rep*.treefile" -delete')
 
         # change directory
         os.chdir(startdir)
@@ -427,7 +438,7 @@ class TreeInferrer:
 
         for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
 
-            if not os.path.exists(f"rep{i}_{self.config_dict["IQTree model"]}.treefile"):
+            if not os.path.exists(f"rep{i}_{self.config_dict['IQTree model']}.treefile"):
 
                 # create command
                 command = '%s -s %s_%s.phy -m %s -pre rep%s_%s --redo --quiet' % (
@@ -510,6 +521,10 @@ class ConcordanceCalculator:
             if "None" in all_trees[i]:
                 result = None
                 sco.append('NA')
+                q1 = "NA"
+                q2 = "NA"
+                q3 = "NA"
+
 
             else:
                 # create temp tree file
@@ -540,6 +555,9 @@ class ConcordanceCalculator:
                     result = None
                     os.system('rm temp.tre temp.map')
                     sco.append("NA")
+                    q1 = "NA"
+                    q2 = "NA"
+                    q3 = "NA"
 
                 else:
                     # create command
@@ -592,7 +610,6 @@ class ConcordanceCalculator:
         results_lsdonly = []
 
         for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
-
             if "None" in all_trees[i]:
                 indicator = "NA"
                 indicator_only = "NA"
@@ -628,7 +645,7 @@ class ConcordanceCalculator:
                 species = set(samples)
                 if len(species) + lsd_count < len(samples):
                     indicator_only = False
-    
+                    
 
             results.append(indicator)
             results_lsdonly.append(indicator_only)
@@ -636,29 +653,107 @@ class ConcordanceCalculator:
         os.chdir(startdir)
         return(results, results_lsdonly)
 
+    def check_lsds_true(self, trees_to_check):
+
+        # change directory
+        startdir = os.getcwd()
+        changedir = os.path.join(self.config_dict["output directory"], self.config_dict["output prefix"])
+        os.chdir(changedir)
+
+        # get trees
+        all_trees = open(trees_to_check, 'r').readlines()
+        results = []
+        results_lsdonly = []
+        max_ages = []
+        min_ages = []
+
+        for i in range(self.config_dict["replicates"] * self.config_dict["subreps"]):
+            if "None" in all_trees[i]:
+                indicator = "NA"
+                indicator_only = "NA"
+                max_age = "NA"
+                min_age = "NA"
+
+            else:
+                ages = []
+                t = ete3.Tree(all_trees[i])
+                R = t.get_midpoint_outgroup()
+                t.set_outgroup(R)
+    
+                indicator = False
+                indicator_only = True
+    
+                lsd_count = 0
+    
+                # iterate over nodes, if there is any node where there are multiple monophyletic B or D copies, then the result is true
+                for node in t.traverse("postorder"):
+                    samples = node.get_leaf_names()
+                    samples = [x.split("_")[0]for x in samples]
+                    species = set(samples)
+                    if len(species) == 1 and len(samples) > 1 and samples[0] == "B":
+                        indicator = True
+                        lsd_count+=1
+                        ages.append(node.get_farthest_leaf()[-1])
+                    elif len(species) == 1 and len(samples) > 1 and samples[0] == "D":
+                        indicator = True
+                        lsd_count+=1
+                        ages.append(node.get_farthest_leaf()[-1])
+                    elif len(species) == 1 and len(samples) > 1 and samples[0] == "A":
+                        lsd_count+=1
+                    elif len(species) == 1 and len(samples) > 1 and samples[0] == "C":
+                        lsd_count+=1
+                    
+                samples = t.get_leaf_names()
+                samples = [x.split("_")[0]for x in samples]
+                species = set(samples)
+                if len(species) + lsd_count < len(samples):
+                    indicator_only = False
+                    
+            if len(ages) == 0:
+                max_age = "NA"
+                min_age = "NA"
+            else:
+                max_age = max(ages)
+                min_age = min(ages)
+
+            results.append(indicator)
+            results_lsdonly.append(indicator_only)
+            max_ages.append(max_age)
+            min_ages.append(min_age)
+
+
+            del(indicator, indicator_only, ages, max_age, min_age)
+
+        os.chdir(startdir)
+        return(results, results_lsdonly, max_ages, min_ages)
+
+
 class ResultsWriter:
     """Save results to file."""
 
     def __init__(self, config_dict):
         self.config_dict = config_dict
     
-    def write_results(self, results_q1, results_q2, results_q3, results_sco, results_lsds, results_lsd_only, name, params):
+    def write_results(self, results_q1, results_q2, results_q3, results_sco, results_lsds, results_lsd_only, name, params, results_lsds_true, results_lsd_only_true, max_ages, min_ages):
 
         filename = os.path.join(self.config_dict["output directory"], self.config_dict["output prefix"], name+'.csv')
 
         results_index = 0
         with open(filename, 'w') as f:
-            f.write('prefix,paramfile,duplication rate,loss rate,p,qratio,r,outgroup,q1,q2,q3,sco,lsd,lsdonly,replicate\n')
+            f.write('prefix,paramfile,duplication rate,loss rate,p,qratio,r,outgroup,q1,q2,q3,sco,lsd,lsdonly,replicate, lsdtrue, lsdonlytrue, max age, min age\n')
             for i in range(self.config_dict["replicates"]):
                 for j in range(self.config_dict["subreps"]):
                     if self.config_dict["outgroup"] == None:
                         f.write(f"{self.config_dict['output prefix']},{params},{self.config_dict['duplication rate'][i]},{self.config_dict['loss rate'][i]},"
                                 f"{self.config_dict['p'][i]},{self.config_dict['qratio'][i]},{self.config_dict['r'][i]},{self.config_dict['outgroup']},"
                                 f"{results_q1[results_index]},{results_q2[results_index]},{results_q3[results_index]},"
-                                f"{results_sco[results_index]},{results_lsds[results_index]},{results_lsd_only[results_index]},{str(j+1)}\n")
+                                f"{results_sco[results_index]},{results_lsds[results_index]},{results_lsd_only[results_index]},{results_index},"
+                                f"{results_lsds_true[results_index]}, {results_lsd_only_true[results_index]}, {max_ages[results_index]}, {min_ages[results_index]}\n")
                     else:
                         f.write(f"{self.config_dict['output prefix']},{params},{self.config_dict['duplication rate'][i]},{self.config_dict['loss rate'][i]},"
                                 f"{self.config_dict['p'][i]},{self.config_dict['qratio'][i]},{self.config_dict['r'][i]},{self.config_dict['outgroup'][i]},"
                                 f"{results_q1[results_index]},{results_q2[results_index]},{results_q3[results_index]},"
-                                f"{results_sco[results_index]},{results_lsds[results_index]},{results_lsd_only[results_index]},{str(j+1)}\n")
+                                f"{results_sco[results_index]},{results_lsds[results_index]},{results_lsd_only[results_index]},{results_index},"
+                                f"{results_lsds_true[results_index]}, {results_lsd_only_true[results_index]}, {max_ages[results_index]}, {min_ages[results_index]}\n")
+
                     results_index += 1
