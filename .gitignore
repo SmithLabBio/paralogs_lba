@@ -9,3 +9,5 @@
 *.gz
 *.phy
 /old/
+/test_results/
+/config_files/simple_test.config
