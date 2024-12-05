@@ -1,0 +1,7 @@
+,Filename,CI_95_min,CI_95_max,CI_100_min,CI_100_max
+0,confidenceintervals_300_sco_mp_bootstrappingresults.csv,0.119332,0.173738,0.095693,0.189329
+1,confidenceintervals_300_all_mp_bootstrappingresults.csv,0.138524,0.177021,0.137262,0.180635
+2,confidenceintervals_300_lsd_mp_bootstrappingresults.csv,0.120311,0.197194,0.110638,0.210579
+3,confidenceintervals_300_sco_ml_bootstrappingresults.csv,0.156775,0.215706,0.140423,0.240528
+4,confidenceintervals_300_lsd_ml_bootstrappingresults.csv,0.163569,0.250845,0.155252,0.26507
+5,confidenceintervals_300_all_ml_bootstrappingresults.csv,0.177887,0.214793,0.174753,0.219367

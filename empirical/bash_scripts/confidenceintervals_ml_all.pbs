@@ -1,0 +1,12 @@
+#!/bin/bash
+  
+#SBATCH -J ci_all_ml                               # Job name 
+#SBATCH -o ci_all_ml.%j.out                     # File to which stdout will be written
+#SBATCH -e ci_all_ml.%j.err                     # File to which stderr will be written
+#SBATCH -N 1                                    # Ensure that all cores are on one machine
+#SBATCH -n 1                                   # Number of cores/cpus
+#SBATCH -t 96:00:00                             # Runtime in DD-HH:MM
+#SBATCH -p smith                               # Partition shared, serial_requeue, unrestricted, test
+#SBATCH --mem=4Gb
+
+python python_scripts/confidence_intervals.py -i ./astral_input_ml_300/astral_allparalogs.treefile -o ./confidenceintervals_300_all_ml -b 100 -a programs/ASTER-Linux/bin/astral
