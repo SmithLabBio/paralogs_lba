@@ -89,7 +89,6 @@ def calculate_confidence_intervals(input_trees, output_directory, num_reps, astr
     # Create the output directory
     os.makedirs(output_directory, exist_ok=True)
 
-    # Your logic to calculate confidence intervals
     print(f"Calculating confidence intervals for input trees from: {input_trees}")
     print(f"Output directory: {output_directory}")
 
@@ -119,5 +118,5 @@ if __name__ == "__main__":
     # Parse command-line arguments
     args = parser.parse_args()
 
-    # Call your function with parsed arguments
+    # calc confidence intervals
     calculate_confidence_intervals(input_trees = args.input, output_directory=args.output, num_reps=args.bs_reps, force=args.force, astral=args.astral)
