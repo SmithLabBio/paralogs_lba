@@ -3,10 +3,8 @@
 .Rhistory
 *.mldist
 *.bionj
-*.treefile
 *.log
 *.iqtree
-*.gz
 *.phy
 /old/
 /test_results/
