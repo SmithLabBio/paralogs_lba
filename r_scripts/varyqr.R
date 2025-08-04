@@ -7,8 +7,8 @@ library(patchwork)
 
 setwd('/mnt/home/ms4438/paralogs_lba/')
 
-results_mp <- read.csv('/mnt/scratch/smithfs/megan/lba/varyqr_mp/results_mp.csv', sep=",")
-results_ml <- read.csv('/mnt/scratch/smithfs/megan/lba/varyqr_ml/results_ml.csv', sep=",")
+results_mp <- read.csv('results/varyqr_mp/results_mp.csv', sep=",")
+results_ml <- read.csv('results/varyqr_ml/results_ml.csv', sep=",")
 
 results_mp <- results_mp %>%
   mutate(method="MP")
