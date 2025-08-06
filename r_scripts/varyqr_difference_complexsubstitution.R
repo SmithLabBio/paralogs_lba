@@ -9,7 +9,7 @@ setwd('~/Documents/GitHub/paralogs_lba/')
 
 results_mp <- read.csv('results/varyqr_mp/results_mp.csv', sep=",")
 results_ml <- read.csv('results/varyqr_ml/results_ml.csv', sep=",")
-results_ml_complex <- read.csv('results/varyqr_ml_complexsubstitution/results_ml.csv')
+results_ml_complex <- read.csv('results_revision/varyqr_ml_complexsubstitution/results_ml.csv')
 
 results_mp <- results_mp %>%
   mutate(method="MP")
