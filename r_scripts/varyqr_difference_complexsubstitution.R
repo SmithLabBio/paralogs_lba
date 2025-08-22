@@ -1,3 +1,5 @@
+# Script for producing Figure 2
+
 library(dplyr)
 library(ggplot2)
 library(viridis)
@@ -9,7 +11,7 @@ setwd('~/Documents/GitHub/paralogs_lba/')
 
 results_mp <- read.csv('results/varyqr_mp/results_mp.csv', sep=",")
 results_ml <- read.csv('results/varyqr_ml/results_ml.csv', sep=",")
-results_ml_complex <- read.csv('results_revision/varyqr_ml_complexsubstitution/results_ml.csv')
+results_ml_complex <- read.csv('results/varyqr_ml_complexsubstitution/results_ml.csv')
 
 results_mp <- results_mp %>%
   mutate(method="MP")
@@ -242,6 +244,7 @@ avg_dif_ml <- sum(ml_data_diff$diff_avg_norm_qs)/ nrow(mp_data_diff)
 # histograms
 hist(mp_data_diff$diff_avg_norm_qs)
 hist(ml_data_diff$diff_avg_norm_qs)
+
 
 combined_plot <- ((figure_mp_sc | figure_mp_all | figure_mp_diff) / (figure_ml_sc | figure_ml_all | figure_ml_diff) /
                     (figure_ml_complex_sc | figure_ml_complex_all | figure_ml_complex_diff)) + 

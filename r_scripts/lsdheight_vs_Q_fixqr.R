@@ -1,12 +1,14 @@
+# Script for producing Figure 3
+
 library(dplyr)
 library(ggplot2)
 
 
-setwd('/mnt/home/ms4438/paralogs_lba/')
+setwd('~/Documents/GitHub/paralogs_lba/')
 
 # read files
 
-results_mp <- read.csv('/mnt/scratch/smithfs/megan/lba/fixqr_lsdage_mp/results_mp.csv', sep=",")
+results_mp <- read.csv('./results/fixqr_lsdage_mp/results_mp.csv', sep=",")
 # add new columns indicating method
 
 results_mp <- results_mp %>%
@@ -19,7 +21,7 @@ results$min.age = as.numeric(results$min.age)
 
 # get only results with heights
 heights <- results %>%
-  filter(lsdtrue == "True") %>%
+  filter(lsdtrue == TRUE) %>%
   filter(lsdonlytrue == " True") %>%
   mutate(category = "LSD")
 

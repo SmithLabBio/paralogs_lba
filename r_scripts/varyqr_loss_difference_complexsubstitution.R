@@ -1,3 +1,5 @@
+# Script for generating Figure S4
+
 library(dplyr)
 library(ggplot2)
 library(viridis)
@@ -9,7 +11,7 @@ setwd('~/Documents/GitHub/paralogs_lba/')
 
 results_mp <- read.csv('results/varyqr_mp_loss/results_mp.csv', sep=",")
 results_ml <- read.csv('results/varyqr_ml_loss/results_ml.csv', sep=",")
-results_ml_complex <- read.csv('results_revision/varyqr_ml_loss_complexsubstitution/results_ml.csv')
+results_ml_complex <- read.csv('results/varyqr_ml_loss_complexsubstitution_redo/results_ml.csv')
 
 results_mp <- results_mp %>%
   mutate(method="MP")

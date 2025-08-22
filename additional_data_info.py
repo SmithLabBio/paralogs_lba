@@ -26,6 +26,7 @@ def getinfo(args):
     # create lists to store new values
     pseudoortholog_list = []
     num_duplications_list = []
+    leaves_list = []
 
     # iterate over each row in the results dataframe
     for index, row in results.iterrows():
@@ -38,6 +39,7 @@ def getinfo(args):
         num_duplications = len(set(copies)) - 1
         species = [x.split("_")[0] for x in tree.get_leaf_names()]
         num_species = len(set(species))
+        leaves = len(tree.get_leaf_names())
 
         # check for pseudoorthologs
         if num_duplications > 0 and row['sco']=="True":
@@ -47,8 +49,10 @@ def getinfo(args):
 
         num_duplications_list.append(num_duplications)
         pseudoortholog_list.append(pseudoortholog)
+        leaves_list.append(leaves)
     results['num_duplications'] = num_duplications_list
     results['pseudoortholog'] = pseudoortholog_list
+    results['leaves'] = leaves_list
     
     results.to_csv(args.output, index=False)
 
